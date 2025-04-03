@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html>
 <head>
@@ -28,5 +29,40 @@
     const formBase = 'https://docs.google.com/forms/d/e/1FAIpQLSeXInd6e0-MX-u9EGnlbZ53Z_SQGLO_kIZxjc-5pR5ptbKX-g/viewform?usp=pp_url';
 
     function createFormLink(p) {
-        return `${formBase}
-            &
+        return formBase +
+            '&entry.1929044199=' + encodeURIComponent(p.architect || '') +
+            '&entry.1378459837=' + encodeURIComponent(p.contractor || '') +
+            '&entry.1693961180=' + encodeURIComponent(p.address || '') +
+            '&entry.1119155325=' + encodeURIComponent(p.parcel_id || '');
+    }
+
+    function onEachParcel(feature, layer) {
+        const p = feature.properties;
+        const formLink = createFormLink(p);
+
+        layer.on('click', () => {
+            window.open(formLink, '_blank');
+        });
+
+        layer.bindTooltip(p.address || 'Click to report info');
+    }
+
+    // Load each file
+    parcelFiles.forEach(file => {
+        fetch(file)
+            .then(res => res.json())
+            .then(data => {
+                L.geoJSON(data, {
+                    style: {
+                        color: '#3388ff',
+                        weight: 1,
+                        fillOpacity: 0.4
+                    },
+                    onEachFeature: onEachParcel
+                }).addTo(map);
+            });
+    });
+</script>
+
+</body>
+</html>
